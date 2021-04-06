@@ -1,114 +1,104 @@
 #pragma once
-#include <vector>
 #include <algorithm>
 #include <memory>
 #include <random>
+#include <vector>
+
+
+#include <iostream>
 
 namespace base {
-std::random_device rd;
-std::mt19937 rand_number(rd());
 
+// структура для отрезков
 struct Segment {
-    int l, r, h;
+  int l, r, h;
 };
 
+//структура для узлов декартова дерева
 struct Node {
-  Node() = delete;
   int size;
   int height;
 
-  std::unique_ptr<Node> left;
-  std::unique_ptr<Node> right;
+  std::shared_ptr<Node> left;
+  std::shared_ptr<Node> right;
 
-  Node(int height_) { this->height = height_; }
+public:
+  Node() = delete;
+  Node(const int height_)
+      : size(1), height(height_), left(nullptr), right(nullptr) {}
 
-  Node(Node &other) {
+  Node(const Node &other) {
     this->size = other.size;
     this->height = other.height;
 
-    *this->left = *other.left;
-    *this->right = *other.right;
+    if (other.left != nullptr) {
+      this->left = other.left;
+    }
+    if (other.right != nullptr) {
+      this->right = other.right;
+    }
   }
 
-  Node &operator=(Node &other) {
+  Node &operator=(const Node &other) {
     this->size = other.size;
     this->height = other.height;
 
-    *this->left = *other.left;
-    *this->right = *other.right;
+    if (other.left != nullptr) {
+      *this->left = *other.left;
+    }
+    if (other.right != nullptr) {
+      *this->right = *other.right;
+    }
     return *this;
   }
 };
-using ptr_node = std::unique_ptr<Node>;
 
+using ptr_node = std::shared_ptr<Node>;
+
+// структура декартова дерева
 struct PersistentTreap {
-private:
+  PersistentTreap() = delete;
+  PersistentTreap(const std::vector<Segment> &segments_,
+                  const std::vector<std::pair<int, int>> &segments_info_) {
+    this->segments = segments_;
+    this->segments_info = segments_info_;
+  }
 
+  void Insert(int height);
+  void Remove(int height);
+  int CntUpperSegments(int x, int y);
+  int Size() { return root.size(); }
 
-public:
-    PersistentTreap() = delete;
-    PersistentTreap(const std::vector<Segment>& segments_,
-                    const std::vector<std::pair<int, std::vector<int>>>& segments_info_) {
-        this->segments = segments_;
-        this->segments_info = segments_info_;
+  void print(int ver) {
+    if (ver > static_cast<int>(root.size()) - 1) {
+      ver = root.size() - 1;
     }
+    print(root[ver]);
+    std::cout << std::endl;
+  }
 
-    void Insert(int height) {
-        if (root.empty()) {
-            root.push_back(std::make_unique<Node>(Node(height)));
-            return;
-        }
-
-        ptr_node left;
-        ptr_node right;
-        ptr_node new_node = std::make_unique<Node>(new Node(height));
-        SplitHeight(root.back(), left, right, height);
-
-        root.resize(root.size() + 1);
-        Merge(root.back(), left, new_node);
-        Merge(root.back(), left, right);
+  void print(ptr_node& node) {
+    if (node == nullptr) {
+      return;
     }
-
-    void Remove(int height) {
-        if (root.empty()) {
-            return;
-        }
-
-        ptr_node left;
-        ptr_node right;
-        ptr_node mid;
-        SplitHeight(root.back(), left, right, height);
-        SplitSize(right, mid, right, 1);
-
-        root.resize(root.size() + 1);
-        Merge(root.back(), left, right);
-    }
-
-    int CntUpperSegments(int x, int y) {
-
-        return ;
-    }
+    print(node->left);
+    std::cout << node->height << " ";
+    print(node->right);
+  }
 
 private:
+  ptr_node CopyNode(ptr_node &prev);
+  int Size(const ptr_node &node);
+  void UpdateNode(ptr_node &node);
+  bool GoLeft(int left, int right);
+  void Merge(ptr_node &node, ptr_node &left, ptr_node &right);
+  void SplitHeight(ptr_node &node, ptr_node &left, ptr_node &right, int key);
+  void SplitSize(ptr_node &node, ptr_node &left, ptr_node &right, int key);
+  int CntUpperSegments(ptr_node &node, int y);
 
-
-    ptr_node CopyNode(ptr_node& prev);
-
-    int Size(const ptr_node& node);
-
-    void UpdateNode(ptr_node& node);
-
-    bool GoLeft(int left, int right);
-
-    void Merge(ptr_node& node, ptr_node& left, ptr_node& right);
-
-    void SplitHeight(ptr_node& node, ptr_node& left, ptr_node& right, int key);
-
-    void SplitSize(ptr_node& node, ptr_node& left, ptr_node& right, int key);
-
-    std::vector<Segment> segments;
-    std::vector<std::pair<int, std::vector<int>>> segments_info;
-    std::vector<ptr_node> root;
+  std::vector<Segment> segments;
+  std::vector<std::pair<int, int>> segments_info;
+  std::vector<ptr_node> root;
 };
 
 } // namespace base
