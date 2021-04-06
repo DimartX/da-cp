@@ -6,3 +6,26 @@
 Структура: персистентное декартово дерево
 
 ** Запуск
+Загрузить репозиторий на свою машину и войти в него.
+#+begin_src shell
+$ git clone https://github.com/DimartX/da-cp.git && cd da-cp
+#+end_src
+
+Для сборки проекта вам понадобится система сборки \textit{meson} и аналог make --- \textit{ninja}.
+
+Установить их можно из стандартных пакетных репозиториев большинства популярных дистрибутивов GNU/Linux.
+
+Создаём директорию для сборки и переходим в неё.
+#+begin_src shell
+$ meson builddir && cd builddir
+#+end_src
+
+Собираем проект
+#+begin_src shell
+$ ninja
+#+end_src
+
+Запуск проекта
+#+begin_src shell
+$ ./cp-da
+#+end_src>
